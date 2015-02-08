@@ -1,9 +1,13 @@
+#! /usr/bin/python
 import numpy
 from matplotlib import pyplot
+import os
+import heapq
 
 
 def read_pgm(filename):
-
+    """ read image from 8-bit PGM file
+    """
     try:
         inFile = open(filename)
 
@@ -37,7 +41,48 @@ def read_pgm(filename):
 
     return None
 
+
+def euclidean_distance(a, b):
+    a = numpy.reshape(a, (1, a.size))
+    b = numpy.reshape(b, (1, b.size))
+    c = a - b
+    return numpy.vdot(c, c)
+
+
+def find_nearest(obj, objects):
+    min_index, min_value = min(enumerate(objects), key=(lambda x: euclidean_distance(obj, x[1])))
+    return min_index
+
+def find_k_nearest(k, obj, objects):
+    min_index, min_value = heapq.nsmallest(k, enumerate(objects), key=(lambda x: euclidean_distance(obj, x[1])))
+    return min_index
+
+def majority_vote():
+    '''
+    '''
+    pass
+
+def load_data(path):
+    files = os.listdir(train_data_dir)
+    files = filter((lambda name: name.endswith(".pgm")), files)
+    # print files
+    files = map((lambda name: os.path.join(train_data_dir, name)), files)
+    data = map(read_pgm, files)
+    # data = map((lambda d: numpy.reshape(d, (1, d.size))), data)
+    return data
+
+
 if __name__ == "__main__":
-    image = read_pgm("data/test/image_00000.pgm")
-    pyplot.imshow(image, pyplot.cm.gray)
-    pyplot.show()
+    train_data_dir = os.path.join(os.getcwd(), "data/train")
+    test_data_dir =  os.path.join(os.getcwd(), "data/test")
+
+    train_data = load_data(train_data_dir)
+    test_data = load_data(test_data_dir)
+
+    labels = numpy.fromfile(os.path.join(train_data_dir, "labels.txt"), dtype=int, sep='\n')
+
+    for img in test_data:
+        pyplot.imshow(img, pyplot.cm.gray)
+        pyplot.show()
+        ind = find_nearest(img, train_data)
+        print labels[ind]
