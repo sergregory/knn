@@ -54,13 +54,21 @@ def find_nearest(obj, objects):
     return min_index
 
 def find_k_nearest(k, obj, objects):
-    min_index, min_value = heapq.nsmallest(k, enumerate(objects), key=(lambda x: euclidean_distance(obj, x[1])))
-    return min_index
+    nearest = heapq.nsmallest(k, enumerate(objects), key=(lambda x: euclidean_distance(obj, x[1])))
+    ind = [o[0] for o in nearest]
+    return ind
 
-def majority_vote():
+def majority_vote(variants):
     '''
     '''
-    pass
+    count = {}
+    for v in variants:
+        if v in count:
+            count[v] += 1
+        else:
+            count[v] = 1
+    vote = max(count.items(), (lambda x: x[1]))
+    return vote[0][0]
 
 def load_data(path):
     files = os.listdir(train_data_dir)
@@ -82,7 +90,9 @@ if __name__ == "__main__":
     labels = numpy.fromfile(os.path.join(train_data_dir, "labels.txt"), dtype=int, sep='\n')
 
     for img in test_data:
-        pyplot.imshow(img, pyplot.cm.gray)
-        pyplot.show()
+        # pyplot.imshow(img, pyplot.cm.gray)
+        # pyplot.show()
         ind = find_nearest(img, train_data)
-        print labels[ind]
+        nearest_labels = [labels[neighbour] for neighbour in find_k_nearest(5, img, train_data)]
+        vote = majority_vote(nearest_labels)
+        print (labels[ind], vote)
